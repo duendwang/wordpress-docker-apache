@@ -1,0 +1,70 @@
+version: "3"
+services:
+  # Database
+  mariadb:
+    image: mariadb:latest
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-MysqlRootPassword123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress}
+      MYSQL_USER: ${MYSQL_USER:-wordpress}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-MysqlPassword123}
+    networks:
+      - network
+  # phpmyadmin
+  phpmyadmin:
+    depends_on:
+      - mariadb
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    expose:
+      - "80"
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-MysqlRootPassword123}
+      MYSQL_USER: ${MYSQL_USER:-wordpress}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-MysqlPassword123}
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-$COMPOSE_PROJECT_NAME}.${SERVER_DOMAIN:?missing SERVER_DOMAIN}
+      VIRTUAL_PATH: /phpmyadmin
+      VIRTUAL_DEST: /
+      PMA_ABSOLUTE_URI: https://${VIRTUAL_HOST:-$COMPOSE_PROJECT_NAME}.${SERVER_DOMAIN:?missing SERVER_DOMAIN}/phpmyadmin/
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST:-$COMPOSE_PROJECT_NAME}.${SERVER_DOMAIN:?missing SERVER_DOMAIN}
+      LETSENCRYPT_EMAIL: $LETSENCRYPT_EMAIL
+      DEBUG: ${DEBUG:-false}
+    networks:
+      - network
+      - nginx-proxy
+  # WordPress
+  wordpress:
+    depends_on:
+      - mariadb
+    image: wordpress:latest
+    expose:
+      - "80"
+    restart: unless-stopped
+    volumes:
+      - ./data/wordpress:/var/www/html
+      - ./php-uploads.ini:/usr/local/etc/php/conf.d/php-uploads.ini
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
+      WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-MysqlPassword123}
+      WORDPRESS_CONFIG_EXTRA: |
+        set_time_limit(300);
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-$COMPOSE_PROJECT_NAME}.${SERVER_DOMAIN:?missing SERVER_DOMAIN}
+      VIRTUAL_PATH: ${VIRTUAL_PATH:-/}
+      VIRTUAL_DEST: /
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST:-$COMPOSE_PROJECT_NAME}.${SERVER_DOMAIN:?missing SERVER_DOMAIN}
+      LETSENCRYPT_EMAIL: $LETSENCRYPT_EMAIL
+      DEBUG: ${DEBUG:-false}
+    networks:
+      - network
+      - nginx-proxy
+networks:
+  network:
+  nginx-proxy:
+    name: ${PROXY_NETWORK:-nginx-proxy}
+    external: true

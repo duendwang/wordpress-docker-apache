@@ -1,0 +1,46 @@
+Creating new template or sites from base template
+
+Direct copy of Docker folder
+1. Copy docker folder
+2. chown everything except data folder to ubuntu
+3. chown `.` and `.env` and `.env.example` to ubuntu
+4. chown data/wordpress to www-data
+5. nano .env and modify virtual_host subdirectory
+6. docker compose up
+7. Open phpmyadmin and log in
+8. Go to wordpress database -> txp4z8r_options table
+9. Change rows 1 & 2 (siteurl & home) to correct URL.
+10. For sites only:
+   A. Re-activate:
+      1. Base:
+         a. Bricks Forge
+         b. Bricks Ultimate (deactivate and re-activate)
+         c. AutomaticCSS & Frames (AutomaticCSS -> AutomaticCSS|Frames License -> Save & Activate)
+         d. Bricks remote template (Bricks -> Settings -> Templates -> save again)
+         d. Shortpixel AI - child license
+         e. iTheme Security
+         f. Wpvivid - child license
+         g. Widget Creator
+         h. WSForm (just click the activate button again)
+      2. Church:
+      3. Chiropractor:
+         a. WP Social Ninja Pro
+         b. Metabox - child license
+   B. ithemes: enforce 2FA for adminstrators
+   C. Wpvivid: enable backup schedule. 
+
+From fresh no-plugins template
+1. Make copy of the templates no-plugins folder and set up
+2. Run copy-files.sh and add wpvivid backup plugins
+3. Initial installation
+4. Update wpvivid backup plugins
+5. Activate wpvivid backup plugins and enter pro license
+6. WPvivid Plugin -> Backups & Restoration -> Upload. Upload base/template wpvivid backup zip.
+7. Localhost -> Scan uploaded backup or received backup.
+8. Click restore
+9. Custom restoration -> uncheck Restore WordPress Core files.
+10. Complete restoration.
+11. Go to domain/backoffice URL to log in using template admin user.
+
+
+Set up wpvivid cloud storage locations
